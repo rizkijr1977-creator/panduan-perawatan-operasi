@@ -208,15 +208,8 @@
           const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
           supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
           document.getElementById('connection-label').textContent='Supabase terhubung';
-          try{
-            await autoSetupDatabase()
-          }catch(setupError){
-            console.error(setupError);
-            document.getElementById('config-alert').classList.remove('hidden');
-            document.getElementById('config-alert').textContent=setupError.message;
-            document.getElementById('login-submit').disabled=true;
-            return;
-          }
+          // Pemeriksaan tabel education_modules langsung dinonaktifkan.
+          // Akses data dilakukan melalui RPC yang sudah divalidasi di Supabase.
           const {data}=await supabase.auth.getSession();
           if(data?.session){
             state.session=data.session;
