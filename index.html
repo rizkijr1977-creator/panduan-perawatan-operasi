@@ -349,7 +349,149 @@
     async function markModuleDone(id){const m=state.modules.find(x=>x.id===id);if(!m)return;if(completed(id)){toast('Materi sudah ditandai dipelajari.');return}try{if(IS_PREVIEW){state.progress.push({case_id:currentCase().id,module_id:id,portal_account_id:state.user.id,completed_at:new Date().toISOString()})}else{const {data,error}=await supabase.rpc('portal_mark_education',{p_token:state.portalToken,p_module_id:id});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Tidak dapat menyimpan progres.');await loadPortalData()}toast('Progres edukasi berhasil dicatat.','success');navigate('education')}catch(err){toast(err.message||'Progres belum tersimpan.','error')}}
     function renderSymptoms(){const recent=state.reports.filter(r=>!state.user.portal||r.case_id===state.user.case_id);return `<div class="page-title"><div><div class="eyebrow">Komunikasi setelah pulang</div><h1>Laporan gejala</h1><p>Catat keluhan agar dapat disampaikan kepada tim kesehatan. Formulir ini tidak dipantau secara real-time.</p></div></div><div class="notice notice-danger" style="margin-bottom:18px">${icon('alert')}<div><strong>Keadaan gawat darurat?</strong><br>Untuk sesak napas, nyeri dada, pingsan/kebingungan, perdarahan banyak, atau kondisi yang terasa mengancam nyawa, cari pertolongan gawat darurat sekarang. Jangan menunggu mengisi formulir atau balasan dari aplikasi.</div></div><div class="content-grid"><section class="card"><div class="card-head"><div><h2>Catat kondisi Anda</h2><p>Pilih gejala yang dialami dan tulis informasi seperlunya.</p></div><div class="icon-box">${icon('clipboard')}</div></div><form id="symptom-form" class="form-grid" onsubmit="submitSymptom(event)"><div class="field"><label>Gejala yang dialami</label><div class="symptom-choice-grid">${symptomOptions.map((s,i)=>`<label class="symptom-choice"><input type="checkbox" name="symptoms" value="${esc(s)}" ${s==='Tidak ada keluhan khusus'&&false?'checked':''}><span>${esc(s)}</span></label>`).join('')}</div></div><div class="field"><label for="symptom-severity">Skala nyeri saat ini (0–10)</label><div class="range-line"><input id="symptom-severity" type="range" min="0" max="10" value="2" oninput="document.getElementById('severity-value').textContent=this.value"><span class="range-value" id="severity-value">2</span></div><div class="scale-labels"><span>0 · Tidak nyeri</span><span>10 · Nyeri terberat</span></div></div><div class="field"><label for="symptom-notes">Keterangan (opsional)</label><textarea id="symptom-notes" maxlength="1200" placeholder="Kapan mulai, apa yang dirasakan, suhu bila diukur, atau informasi lain…"></textarea><span class="tiny muted">Hindari memasukkan informasi yang tidak diperlukan.</span></div><button type="submit" class="btn btn-primary">Kirim laporan gejala ${icon('arrow')}</button><div class="tiny muted">Laporan dalam aplikasi bukan layanan respons darurat dan belum tentu langsung dibaca petugas.</div></form></section><aside class="card"><div class="card-head"><div><h2>Bagaimana laporan digunakan?</h2><p>Untuk komunikasi tindak lanjut.</p></div></div><div class="check-row"><div class="check-round">1</div><div><strong>Pilih gejala yang relevan</strong><p>Jangan menunda pertolongan demi menyelesaikan formulir.</p></div></div><div class="check-row"><div class="check-round">2</div><div><strong>Petugas meninjau</strong><p>Waktu respons mengikuti mekanisme dan jam layanan fasilitas kesehatan.</p></div></div><div class="check-row"><div class="check-round">3</div><div><strong>Ikuti arahan klinis</strong><p>Perubahan kondisi harus dikomunikasikan langsung bila mendesak.</p></div></div><div class="divider"></div><h3>Kontak tindak lanjut</h3><p class="muted tiny">Gunakan nomor dokter, poli, atau rumah sakit yang tercantum di surat pulang Anda. Isi kontak tersebut di informasi pulang dari fasilitas kesehatan.</p></aside></div>`}
     async function submitSymptom(e){e.preventDefault();const form=e.currentTarget;const selected=[...form.querySelectorAll('input[name="symptoms"]:checked')].map(x=>x.value);const severity=Number(document.getElementById('symptom-severity').value);const notes=document.getElementById('symptom-notes').value.trim();if(selected.length===0){toast('Pilih gejala atau pilih “Tidak ada keluhan khusus”.','error');return}if(selected.includes('Tidak ada keluhan khusus')&&selected.length>1){toast('“Tidak ada keluhan khusus” tidak dapat dipilih bersama gejala lain.','error');return}const urgent=severity>=8||selected.some(x=>emergencySymptoms.includes(x));if(urgent&&!confirm('Pilihan Anda mungkin memerlukan penilaian cepat. Jika mengalami sesak napas, nyeri dada, pingsan, perdarahan banyak, atau kondisi gawat, cari pertolongan sekarang dan jangan menunggu aplikasi. Tetap kirim laporan?'))return;try{if(IS_PREVIEW){state.reports.unshift({id:'demo-report-'+Date.now(),case_id:currentCase().id,patient_name:currentCase().patient_name,severity,symptoms:selected,notes,urgent_flag:urgent,status:'pending',created_at:new Date().toISOString()})}else{const {data,error}=await supabase.rpc('portal_submit_symptom',{p_token:state.portalToken,p_symptoms:selected,p_severity:severity,p_notes:notes});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Laporan tidak tersimpan.');await loadPortalData()}toast(urgent?'Laporan tercatat. Tetap cari pertolongan segera bila ada tanda bahaya.':'Laporan gejala berhasil dicatat.','success');navigate('history')}catch(err){toast(err.message||'Laporan tidak dapat disimpan.','error')}}
-    function renderHistory(){const caseId=currentCase()?.id;const reports=state.reports.filter(r=>state.user.portal?(r.case_id===caseId||!r.case_id):true).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));const progress=state.progress.filter(p=>!p.case_id||p.case_id===caseId).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));return `<div class="page-title"><div><div class="eyebrow">Catatan pribadi</div><h1>Riwayat aktivitas</h1><p>Ringkasan materi yang dipelajari dan laporan gejala yang tercatat.</p></div></div><div class="content-grid"><section class="card"><div class="card-head"><div><h2>Riwayat laporan gejala</h2><p>${reports.length} laporan tercatat</p></div><div class="icon-box orange">${icon('activity')}</div></div>${reports.length?`<div class="timeline">${reports.map(r=>`<article class="timeline-item"><span class="timeline-point" style="${r.urgent_flag?'border-color:#c23e35;box-shadow:0 0 0 4px #fff0ef':''}"></span><h3>${esc((r.symptoms||[]).join(', ')||'Laporan gejala')}</h3><p>${esc(timeFmt(r.created_at))} · Skala nyeri ${Number(r.severity??0)}/10</p>${r.notes?`<p>${esc(r.notes)}</p>`:''}<span class="pill ${r.status==='closed'?'pill-green':r.status==='seen'?'pill-teal':'pill-orange'}">${r.status==='closed'?'Ditutup':r.status==='seen'?'Telah ditinjau':'Menunggu tinjauan'}</span>${r.urgent_flag?'<span class="pill pill-red" style="margin-left:5px">Perlu evaluasi cepat</span>':''}${r.review_note?`<div class="notice notice-info" style="margin-top:8px">${icon('info')}<div><strong>Catatan petugas</strong><br>${esc(r.review_note)}</div></div>`:''}</article>`).join('')}</div>`:`<div class="empty-state">${icon('activity')}<h3>Belum ada laporan</h3><p>Jika perlu, catat gejala melalui menu Laporan gejala.</p><button class="btn btn-ghost btn-small" onclick="navigate('symptoms')">Catat gejala</button></div>`}</section><section class="card"><div class="card-head"><div><h2>Materi dipelajari</h2><p>Catatan progres edukasi</p></div><div class="icon-box">${icon('book')}</div></div>${progress.length?`<div class="timeline">${progress.map(p=>{const m=state.modules.find(x=>x.id===p.module_id);return `<article class="timeline-item"><span class="timeline-point"></span><h3>${esc(m?.title||p.module_title||'Materi edukasi')}</h3><p>Ditandai dipelajari · ${esc(timeFmt(p.completed_at))}</p></article>`}).join('')}</div>`:`<div class="empty-state">${icon('book')}<h3>Belum ada progres</h3><p>Materi yang selesai dibaca akan tercatat di sini.</p><button class="btn btn-ghost btn-small" onclick="navigate('education')">Buka panduan</button></div>`}</section></div>`}
+    
+function renderHistory(){
+  const caseId = currentCase()?.id;
+
+  const reports = state.reports
+    .filter(r => state.user.portal
+      ? (r.case_id === caseId || !r.case_id)
+      : true
+    )
+    .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const progress = state.progress
+    .filter(p => !p.case_id || p.case_id === caseId)
+    .sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at));
+
+  function reportStatusLabel(status){
+    switch(status){
+      case 'pending': return 'Menunggu tinjauan';
+      case 'seen': return 'Telah ditinjau';
+      case 'closed': return 'Ditutup';
+      default: return 'Status tidak dikenal';
+    }
+  }
+
+  function reportStatusClass(status){
+    switch(status){
+      case 'seen': return 'pill-teal';
+      case 'closed': return 'pill-green';
+      default: return 'pill-orange';
+    }
+  }
+
+  return `
+    <div class="page-title">
+      <div>
+        <div class="eyebrow">Catatan pribadi</div>
+        <h1>Riwayat aktivitas</h1>
+        <p>Ringkasan materi yang dipelajari dan laporan gejala yang tercatat.</p>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Riwayat laporan gejala</h2>
+            <p>${reports.length} laporan tercatat</p>
+          </div>
+          <div class="icon-box orange">${icon('activity')}</div>
+        </div>
+
+        ${reports.length ? `
+          <div class="timeline">
+            ${reports.map(r => `
+              <article class="timeline-item">
+                <span class="timeline-point"
+                  style="${r.urgent_flag
+                    ? 'border-color:#c23e35;box-shadow:0 0 0 4px #fff0ef'
+                    : ''}">
+                </span>
+
+                <h3>${esc((r.symptoms || []).join(', ') || 'Laporan gejala')}</h3>
+
+                <p>${esc(timeFmt(r.created_at))} · Skala nyeri ${Number(r.severity ?? 0)}/10</p>
+
+                ${r.notes ? `<p>${esc(r.notes)}</p>` : ''}
+
+                <span class="pill ${reportStatusClass(r.status)}">
+                  ${reportStatusLabel(r.status)}
+                </span>
+
+                ${r.urgent_flag
+                  ? '<span class="pill pill-red" style="margin-left:5px">Perlu evaluasi cepat</span>'
+                  : ''}
+
+                ${r.review_note ? `
+                  <div class="notice notice-info" style="margin-top:8px">
+                    ${icon('info')}
+                    <div>
+                      <strong>Catatan tindak lanjut petugas</strong><br>
+                      ${esc(r.review_note)}
+                      ${r.reviewed_at
+                        ? `<p style="margin-top:6px">Ditinjau: ${esc(timeFmt(r.reviewed_at))}</p>`
+                        : ''}
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${r.status === 'seen' && !r.review_note ? `
+                  <p style="margin-top:8px;color:var(--muted)">
+                    Laporan telah ditinjau petugas.
+                  </p>
+                ` : ''}
+              </article>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            ${icon('activity')}
+            <h3>Belum ada laporan</h3>
+            <p>Jika perlu, catat gejala melalui menu Laporan gejala.</p>
+            <button class="btn btn-ghost btn-small"
+              onclick="navigate('symptoms')">Catat gejala</button>
+          </div>
+        `}
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Materi dipelajari</h2>
+            <p>Catatan progres edukasi</p>
+          </div>
+          <div class="icon-box">${icon('book')}</div>
+        </div>
+
+        ${progress.length ? `
+          <div class="timeline">
+            ${progress.map(p => {
+              const m = state.modules.find(x => x.id === p.module_id);
+              return `
+                <article class="timeline-item">
+                  <span class="timeline-point"></span>
+                  <h3>${esc(m?.title || p.module_title || 'Materi edukasi')}</h3>
+                  <p>Ditandai dipelajari · ${esc(timeFmt(p.completed_at))}</p>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            ${icon('book')}
+            <h3>Belum ada progres</h3>
+            <p>Materi yang selesai dibaca akan tercatat di sini.</p>
+            <button class="btn btn-ghost btn-small"
+              onclick="navigate('education')">Buka panduan</button>
+          </div>
+        `}
+      </section>
+    </div>
+  `;
+}
+
     
     function renderStaff(){
       if(!isStaff()) return '<div class="notice notice-danger">Akses halaman ini hanya untuk perawat dan pengelola.</div>';
