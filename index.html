@@ -278,7 +278,26 @@
     });
 
     function demoLogin(kind){if(!IS_PREVIEW)return;state.portalToken=null;state.session=null;state.isPreview=true;state.modules=demoModules.map(m=>structuredClone(m));state.progress=demoProgress.map(x=>({...x}));state.reports=demoReports.map(x=>({...x}));state.cases=demoCases.map(x=>({...x}));state.staffOverview=null;state.homecare=emptyHomecare();if(kind==='patient'){state.user={id:'demo-patient',username:'sari.demo',full_name:'Sari Wulandari',role:'patient',case_id:demoCase.id,portal:true}}else if(kind==='family'){state.user={id:'demo-family',username:'keluarga.demo',full_name:'Dina Wulandari',role:'family',case_id:demoCase.id,portal:true}}else if(kind==='nurse'){state.user={id:'demo-nurse',email:'perawat@lapacare.demo',full_name:'Ns. Demo Perawat',role:'nurse',portal:false}}else{state.user={id:'demo-admin',email:'pengelola@lapacare.demo',full_name:'Pengelola Aplikasi',role:'manager',portal:false}}hydratePreviewHomecare();if(isStaff())loadStaffHomecare();showApp();navigate('home')}
-    async function enterStaffApp(authUser){state.session=state.session||null;const {data:profile,error}=await supabase.from('profiles').select('id,full_name,role,active').eq('id',authUser.id).maybeSingle();if(error)throw error;if(!profile||!profile.active)throw new Error('Profil tidak aktif atau belum disiapkan. Hubungi administrator.');state.user={...profile,email:authUser.email,portal:false};await loadStaffOverview();showApp();navigate('home')}
+    async function enterStaffApp(authUser){
+  state.session = state.session || null;
+
+  const { data: profile, error } = await supabase.rpc('staff_get_my_profile');
+  if (error) throw error;
+
+  if (!profile || !profile.active) {
+    throw new Error('Profil tidak aktif atau belum disiapkan. Hubungi administrator.');
+  }
+
+  state.user = {
+    ...profile,
+    email: authUser.email,
+    portal: false
+  };
+
+  await loadStaffOverview();
+  showApp();
+  navigate('home');
+}
     async function loadPortalData(){if(IS_PREVIEW)return;const {data,error}=await supabase.rpc('portal_get_data',{p_token:state.portalToken});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Sesi tidak valid. Silakan masuk kembali.');state.user={...state.user,...data.user,case_id:data.case?.id};state.portalCase=data.case;state.modules=data.modules||[];state.progress=data.progress||[];state.reports=data.reports||[];await loadPortalHomecare();}
     async function loadStaffOverview(){if(IS_PREVIEW){state.staffOverview={cases:state.cases,reports:state.reports,progress:state.progress,modules:state.modules};return;}const {data,error}=await supabase.rpc('staff_get_overview');if(error)throw error;state.staffOverview=data||{cases:[],reports:[],progress:[],modules:[]};state.cases=state.staffOverview.cases||[];state.reports=state.staffOverview.reports||[];state.progress=state.staffOverview.progress||[];state.modules=state.staffOverview.modules||[];await loadStaffHomecare();}
     
