@@ -721,11 +721,31 @@ async function createCase(e) {
           const c = state.cases.find(x => x.id === caseId);
           if (c) Object.assign(c, payload);
           state.staffOverview.cases = state.cases;
-        } else {
-          const { error } = await supabase.from('patient_cases').update(payload).eq('id', caseId);
-          if (error) throw error;
-          await loadStaffOverview();
-        }
+        
+} else {
+  const { data, error } = await supabase.rpc(
+    'staff_update_case',
+    {
+      p_case_id: caseId,
+      p_patient_code: payload.patient_code,
+      p_patient_name: payload.patient_name,
+      p_surgery_type: payload.surgery_type,
+      p_surgery_date: payload.surgery_date,
+      p_discharge_date: payload.discharge_date
+    }
+  );
+
+  if (error) throw error;
+
+  if (!data || data.ok !== true) {
+    throw new Error(
+      data?.message || 'Tidak dapat memperbarui data pasien.'
+    );
+  }
+
+  await loadStaffOverview();
+}
+
         closeModal();
         toast('Data pasien berhasil diperbarui.', 'success');
         navigate('staff'); 
