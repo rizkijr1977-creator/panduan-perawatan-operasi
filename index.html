@@ -258,7 +258,7 @@
           state.session=data.session;
           await enterStaffApp(data.user);
         }else{
-          const {data,error}=await supabase.rpc('portal_login',{p_username:username,p_password:password});
+         const {data,error}=await supabase.rpc('portal_login',{p_username:String(username).trim().toLowerCase(),p_password:password});
           if(error)throw error;
           if(!data?.ok)throw new Error(data?.message||'Username atau kata sandi tidak valid.');
           
