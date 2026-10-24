@@ -533,7 +533,74 @@ function renderHistory(){
     
     function renderProfile(){const u=state.user;const c=currentCase();return `<div class="page-title"><div><div class="eyebrow">Pengaturan pengguna</div><h1>Akun saya</h1><p>Informasi sesi dan ringkasan akses saat ini.</p></div></div><section class="card" style="max-width:760px"><div class="profile-hero"><div class="profile-big">${esc(initials(u.full_name))}</div><div><h2>${esc(u.full_name)}</h2><p class="muted" style="margin:0">${esc(roleLabel(u.role))} ${IS_PREVIEW?'<span class="demo-tag" style="margin-left:5px">DEMO</span>':''}</p><div class="tiny muted" style="margin-top:4px">${esc(u.email||u.username||'Akun Aplikasi')}</div></div></div><div class="divider"></div><div class="field-row"><div><div class="tiny muted">Jenis akun</div><strong>${esc(roleLabel(u.role))}</strong></div><div><div class="tiny muted">Status koneksi</div><strong>${IS_PREVIEW?'Mode preview — data dummy':'Supabase terhubung'}</strong></div></div>${!isStaff()?`<div class="divider"></div><h3>Ringkasan episode perawatan</h3><div class="field-row"><div><div class="tiny muted">Kode episode</div><strong>${esc(c.patient_code||'—')}</strong></div><div><div class="tiny muted">Tanggal operasi</div><strong>${dateFmt(c.surgery_date)}</strong></div><div><div class="tiny muted">Tanggal pulang</div><strong>${dateFmt(c.discharge_date)}</strong></div><div><div class="tiny muted">Jenis tindakan</div><strong>${esc(isStaff()?(c.surgery_type||'—'):friendlySurgeryType(c.surgery_type))}</strong></div></div>`:''}<div class="divider"></div><div class="notice notice-warn">${icon('shield')}<div><strong>Privasi dan keamanan</strong><br>Gunakan akun pribadi, jangan berbagi sandi, dan keluar setelah memakai perangkat bersama. Jangan masukkan data pasien nyata dalam mode preview.</div></div><button class="btn btn-danger" style="margin-top:18px" onclick="logout()">${icon('logout')} Keluar dari Aplikasi</button></section>`}
     function openNewCaseModal(){document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Episode pascaoperasi</div><h2>Tambah episode perawatan</h2><p class="muted tiny">Gunakan data minimal sesuai kewenangan dan kebijakan fasilitas.</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><form class="form-grid" onsubmit="createCase(event)"><div class="field-row"><div class="field"><label>Kode episode</label><input name="patient_code" placeholder="LP-2026-003" required maxlength="40"></div><div class="field"><label>Nama pasien</label><input name="patient_name" placeholder="Nama sesuai administrasi" required maxlength="120"></div></div><div class="field"><label>Jenis operasi</label><input name="surgery_type" value="Laparatomi" required maxlength="160"></div><div class="field-row"><div class="field"><label>Tanggal operasi</label><input type="date" name="surgery_date" max="${today()}" required></div><div class="field"><label>Tanggal pulang (bila sudah)</label><input type="date" name="discharge_date"></div></div><div class="notice notice-info">${icon('info')}<div>Informasi episode ini bukan rekam medis lengkap. Jangan memasukkan diagnosis sensitif atau detail yang tidak diperlukan.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" type="submit">Simpan episode</button></div></form></section></div>`}
-    async function createCase(e){e.preventDefault();const f=e.currentTarget;const fd=new FormData(f);const payload={patient_code:String(fd.get('patient_code')).trim(),patient_name:String(fd.get('patient_name')).trim(),surgery_type:String(fd.get('surgery_type')).trim(),surgery_date:String(fd.get('surgery_date')),discharge_date:String(fd.get('discharge_date')||'')||null,status:'active'};try{if(IS_PREVIEW){if(state.cases.some(c=>c.patient_code.toLowerCase()===payload.patient_code.toLowerCase()))throw new Error('Kode episode sudah digunakan.');state.cases.unshift({...payload,id:'demo-case-'+Date.now(),primary_nurse_id:state.user.id,portal_accounts:[]});state.staffOverview={...(state.staffOverview||{}),cases:state.cases};}else{payload.primary_nurse_id=state.user.id;const {error}=await supabase.from('patient_cases').insert(payload);if(error)throw error;await loadStaffOverview()}closeModal();toast('Episode perawatan berhasil dibuat.','success');navigate('staff')}catch(err){toast(err.message||'Tidak dapat menyimpan episode.','error')}}
+    
+async function createCase(e) {
+  e.preventDefault();
+
+  const f = e.currentTarget;
+  const fd = new FormData(f);
+
+  const payload = {
+    p_patient_code: String(fd.get('patient_code') || '').trim(),
+    p_patient_name: String(fd.get('patient_name') || '').trim(),
+    p_surgery_type: String(fd.get('surgery_type') || '').trim(),
+    p_surgery_date: String(fd.get('surgery_date') || ''),
+    p_discharge_date: String(fd.get('discharge_date') || '') || null
+  };
+
+  try {
+    if (IS_PREVIEW) {
+      if (state.cases.some(c =>
+        c.patient_code.toLowerCase() ===
+        payload.p_patient_code.toLowerCase()
+      )) {
+        throw new Error('Kode episode sudah digunakan.');
+      }
+
+      state.cases.unshift({
+        patient_code: payload.p_patient_code,
+        patient_name: payload.p_patient_name,
+        surgery_type: payload.p_surgery_type,
+        surgery_date: payload.p_surgery_date,
+        discharge_date: payload.p_discharge_date,
+        status: 'active',
+        id: 'demo-case-' + Date.now(),
+        primary_nurse_id: state.user.id,
+        portal_accounts: []
+      });
+
+      state.staffOverview = {
+        ...(state.staffOverview || {}),
+        cases: state.cases
+      };
+    } else {
+      const { data, error } = await supabase.rpc(
+        'staff_create_case',
+        payload
+      );
+
+      if (error) throw error;
+
+      if (!data || data.ok !== true) {
+        throw new Error(
+          data?.message || 'Tidak dapat menyimpan episode.'
+        );
+      }
+
+      await loadStaffOverview();
+    }
+
+    closeModal();
+    toast('Episode perawatan berhasil dibuat.', 'success');
+    navigate('staff');
+  } catch (err) {
+    toast(
+      err.message || 'Tidak dapat menyimpan episode.',
+      'error'
+    );
+  }
+}
+
     function openAccountModal(caseId){const c=state.cases.find(x=>x.id===caseId);if(!c){toast('Episode tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Akses pasien & keluarga</div><h2>Buat akun portal</h2><p class="muted tiny">${esc(c.patient_code)} · ${esc(c.patient_name)}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><form class="form-grid" onsubmit="createPortalAccount(event,'${esc(caseId)}')"><div class="field"><label>Nama tampilan</label><input name="display_name" required maxlength="120" placeholder="Nama pasien atau anggota keluarga"></div><div class="field-row"><div class="field"><label>Username</label><input name="username" required minlength="4" maxlength="40" pattern="[A-Za-z0-9._-]{4,40}" placeholder="sari.keluarga"></div><div class="field"><label>Jenis akun</label><select name="role"><option value="patient">Pasien</option><option value="family">Keluarga pasien</option></select></div></div><div class="field"><label>Kata sandi sementara</label><input name="password" type="password" minlength="10" autocomplete="new-password" required placeholder="Minimal 10 karakter"></div><div class="notice notice-warn">${icon('shield')}<div>Berikan kredensial awal secara privat, minta pengguna menggantinya melalui prosedur fasilitas, dan jangan mengirimkan kata sandi melalui grup/pesan terbuka.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" type="submit">Buat akses</button></div></form></section></div>`}
     async function createPortalAccount(e,caseId){e.preventDefault();const fd=new FormData(e.currentTarget);const payload={p_case_id:caseId,p_username:String(fd.get('username')).trim(),p_password:String(fd.get('password')),p_display_name:String(fd.get('display_name')).trim(),p_role:String(fd.get('role'))};try{if(IS_PREVIEW){const c=state.cases.find(x=>x.id===caseId);if(state.accounts.some(a=>a.username.toLowerCase()===payload.p_username.toLowerCase()))throw new Error('Username sudah digunakan.');state.accounts.push({id:'demo-account-'+Date.now(),caseId:caseId,username:payload.p_username,display_name:payload.p_display_name,role:payload.p_role});c.portal_accounts=c.portal_accounts||[];c.portal_accounts.push(state.accounts[state.accounts.length-1]);}else{const {data,error}=await supabase.rpc('staff_create_portal_account',payload);if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Akun tidak dapat dibuat.');await loadStaffOverview()}closeModal();toast('Akun portal berhasil dibuat. Berikan username secara privat kepada pengguna.','success');navigate('staff')}catch(err){toast(err.message||'Tidak dapat membuat akun.','error')}}
     function reviewReport(id){const r=state.reports.find(x=>x.id===id);if(!r){toast('Laporan tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Tinjauan laporan</div><h2>${esc(r.patient_name||r.case_patient_name||'Laporan pasien')}</h2><p class="muted tiny">${esc(timeFmt(r.created_at))}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><div class="notice ${r.urgent_flag?'notice-danger':'notice-info'}">${icon(r.urgent_flag?'alert':'info')}<div><strong>${r.urgent_flag?'Perlu evaluasi klinis segera':'Ringkasan laporan'}</strong><br>${esc((r.symptoms||[]).join(', '))}<br>Skala nyeri: ${Number(r.severity??0)}/10</div></div>${r.notes?`<p style="margin-top:13px;font-size:13px">${esc(r.notes)}</p>`:''}<form class="form-grid" style="margin-top:16px" onsubmit="saveReportReview(event,'${esc(id)}')"><div class="field"><label>Status tindak lanjut</label><select name="status"><option value="pending" ${r.status==='pending'?'selected':''}>Menunggu tindak lanjut</option><option value="seen" ${r.status==='seen'?'selected':''}>Telah ditinjau</option><option value="closed" ${r.status==='closed'?'selected':''}>Ditutup sesuai prosedur</option></select></div><div class="field"><label>Catatan tindak lanjut (opsional)</label><textarea name="review_note" maxlength="1200" placeholder="Catatan untuk dokumentasi internal, tidak menggantikan komunikasi klinis langsung">${esc(r.review_note||'')}</textarea></div><div class="notice notice-warn">${icon('info')}<div>Jangan memberikan diagnosis otomatis. Gejala dengan tanda bahaya harus ditindaklanjuti sesuai alur triase dan komunikasi klinis fasilitas.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">Simpan tinjauan</button></div></form></section></div>`}
