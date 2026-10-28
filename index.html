@@ -636,10 +636,228 @@ async function createCase(e) {
       <section class="card"><div class="card-head"><div><h2>Hubungi tim bedah/rumah sakit hari ini</h2><p>Ikuti nomor kontak pada surat pulang.</p></div><span class="pill pill-orange">Evaluasi segera</span></div><ul class="plain-list"><li>Demam atau menggigil, khususnya suhu 38 °C atau lebih.</li><li>Kemerahan yang meluas, luka terasa panas/bengkak, nyeri bertambah, atau keluar cairan/nanah berbau.</li><li>Muntah berulang, sulit minum, atau perubahan kondisi yang membuat Anda khawatir.</li><li>Sulit berkemih atau tidak bisa buang air kecil seperti biasanya.</li></ul><div class="notice notice-info" style="margin-top:14px">${icon('info')}<div>Daftar ini bukan alat diagnosis lengkap. Ikuti instruksi pulang dan minta bantuan lebih cepat jika kondisi terasa gawat.</div></div></section>`}
     
     const woundChoices=['Tidak ada perubahan mengkhawatirkan','Kemerahan meluas','Bengkak atau terasa panas','Cairan/nanah dari luka','Bau tidak sedap','Luka terbuka','Perdarahan','Balutan basah/kotor','Nyeri bertambah','Demam atau menggigil'];
-    function renderWounds(){const rows=(state.homecare?.wounds||[]).filter(x=>!x.case_id||x.case_id===currentCase()?.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));return `<div class="page-title"><div><div class="eyebrow">Pemantauan mandiri</div><h1>Cek luka harian</h1><p>Amati luka dan balutan sesuai instruksi tim bedah. Catatan tidak menggantikan pemeriksaan tenaga kesehatan.</p></div></div><div class="notice notice-info" style="margin-bottom:17px">${icon('info')}<div>Cuci tangan sebelum dan sesudah menyentuh area balutan. Jangan membuka, mengganti, atau mengoleskan bahan ke luka di luar petunjuk yang diberikan.</div></div><div class="content-grid"><section class="card"><div class="card-head"><div><h2>Kondisi luka hari ini</h2><p>Pilih semua yang sesuai. Isian “tidak ada perubahan” tidak dapat digabung dengan keluhan lain.</p></div></div><form class="form-grid" onsubmit="saveWoundAssessment(event)"><div class="wound-choice-grid">${woundChoices.map((x,i)=>`<label class="symptom-choice"><input type="checkbox" name="wound_findings" value="${esc(x)}" onchange="${i===0?'toggleWoundNone(this)':'toggleWoundOption(this)'}"> <span>${esc(x)}</span></label>`).join('')}</div><div class="field-row"><div class="field"><label>Suhu tubuh (°C), bila diukur</label><input name="temperature" type="number" min="34" max="43" step="0.1" placeholder="Contoh: 37.2"></div><div class="field"><label>Catatan tambahan (opsional)</label><input name="notes" maxlength="1200" placeholder="Contoh: balutan masih kering"></div></div><button class="btn btn-primary" type="submit">${icon('check')} Simpan pemeriksaan luka</button></form><p class="tiny muted" style="margin:13px 0 0">Bila luka terbuka, perdarahan banyak, atau jaringan tampak keluar, langsung cari pertolongan darurat.</p></section><section class="card"><div class="card-head"><div><h2>Riwayat pemeriksaan</h2><p>${rows.length} catatan</p></div><div class="icon-box">${icon('clipboard')}</div></div>${rows.length?`<div class="timeline">${rows.map(r=>`<article class="timeline-item"><span class="timeline-point" style="${r.urgent_flag?'border-color:#bf352c;box-shadow:0 0 0 4px #fff0ef':''}"></span><h3>${esc((r.findings||[]).join(', ')||'Pemeriksaan luka')}</h3><p>${esc(careTime(r.created_at))}${r.temperature?` · Suhu ${esc(String(r.temperature))} °C`:''}</p>${r.notes?`<p>${esc(r.notes)}</p>`:''}${r.urgent_flag?'<span class="pill pill-red">Perlu pertolongan segera</span>':''}</article>`).join('')}</div>`:`<div class="empty-state">${icon('shield')}<h3>Belum ada catatan</h3><p>Catat kondisi luka secara berkala untuk membantu mengingat perubahan.</p></div>`}</section></div>`}
+    function renderWounds(){const rows=(state.homecare?.wounds||[]).filter(x=>!x.case_id||x.case_id===currentCase()?.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));return `<div class="page-title"><div><div class="eyebrow">Pemantauan mandiri</div><h1>Cek luka harian</h1><p>Amati luka dan balutan sesuai instruksi tim bedah. Catatan tidak menggantikan pemeriksaan tenaga kesehatan.</p></div></div><div class="notice notice-info" style="margin-bottom:17px">${icon('info')}<div>Cuci tangan sebelum dan sesudah menyentuh area balutan. Jangan membuka, mengganti, atau mengoleskan bahan ke luka di luar petunjuk yang diberikan.</div></div><div class="content-grid"><section class="card"><div class="card-head"><div><h2>Kondisi luka hari ini</h2><p>Pilih semua yang sesuai. Isian “tidak ada perubahan” tidak dapat digabung dengan keluhan lain.</p></div></div><form class="form-grid" onsubmit="saveWoundAssessment(event)"><div class="wound-choice-grid">${woundChoices.map((x,i)=>`<label class="symptom-choice"><input type="checkbox" name="wound_findings" value="${esc(x)}" onchange="${i===0?'toggleWoundNone(this)':'toggleWoundOption(this)'}"> <span>${esc(x)}</span></label>`).join('')}</div><div class="field-row">
+  <div class="field">
+    <label>Suhu tubuh (°C), bila diukur</label>
+    <input name="temperature" type="number" min="34" max="43"
+      step="0.1" placeholder="Contoh: 37.2">
+  </div>
+  <div class="field">
+    <label>Catatan tambahan (opsional)</label>
+    <input name="notes" maxlength="1200"
+      placeholder="Contoh: balutan masih kering">
+  </div>
+</div>
+
+<div class="field">
+  <label for="wound_photo">Foto kondisi luka (opsional)</label>
+  <input
+    id="wound_photo"
+    name="wound_photo"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+  >
+  <p class="tiny muted">
+    Format JPG, PNG, atau WebP. Ukuran maksimal 5 MB.
+    Foto harus memperlihatkan kondisi luka dengan jelas.
+  </p>
+</div><button class="btn btn-primary" type="submit">${icon('check')} Simpan pemeriksaan luka</button></form><p class="tiny muted" style="margin:13px 0 0">Bila luka terbuka, perdarahan banyak, atau jaringan tampak keluar, langsung cari pertolongan darurat.</p></section><section class="card"><div class="card-head"><div><h2>Riwayat pemeriksaan</h2><p>${rows.length} catatan</p></div><div class="icon-box">${icon('clipboard')}</div></div>${rows.length?`<div class="timeline">${rows.map(r=>`<article class="timeline-item"><span class="timeline-point" style="${r.urgent_flag?'border-color:#bf352c;box-shadow:0 0 0 4px #fff0ef':''}"></span><h3>${esc((r.findings||[]).join(', ')||'Pemeriksaan luka')}</h3><p>${esc(careTime(r.created_at))}${r.temperature?` · Suhu ${esc(String(r.temperature))} °C`:''}</p>${r.notes?`<p>${esc(r.notes)}</p>`:''}${r.urgent_flag?'<span class="pill pill-red">Perlu pertolongan segera</span>':''}</article>`).join('')}</div>`:`<div class="empty-state">${icon('shield')}<h3>Belum ada catatan</h3><p>Catat kondisi luka secara berkala untuk membantu mengingat perubahan.</p></div>`}</section></div>`}
     function toggleWoundNone(el){if(el.checked)document.querySelectorAll('input[name="wound_findings"]').forEach(x=>{if(x!==el)x.checked=false})}
     function toggleWoundOption(el){if(el.checked){const none=document.querySelector('input[name="wound_findings"][value="Tidak ada perubahan mengkhawatirkan"]');if(none)none.checked=false}}
-    async function saveWoundAssessment(e){e.preventDefault();const form=e.currentTarget;const findings=[...form.querySelectorAll('input[name="wound_findings"]:checked')].map(x=>x.value);if(!findings.length){toast('Pilih kondisi luka yang paling sesuai.','error');return}if(findings.includes(woundChoices[0])&&findings.length>1){toast('Pilihan “tidak ada perubahan” tidak dapat digabung.','error');return}const temp=form.elements.temperature.value?Number(form.elements.temperature.value):null;const notes=form.elements.notes.value.trim();const record={id:'demo-wound-'+Date.now(),case_id:currentCase()?.id,findings,temperature:temp,notes,urgent_flag:findings.some(x=>['Luka terbuka','Perdarahan'].includes(x)),created_at:new Date().toISOString()};try{if(IS_PREVIEW){state.homecare.wounds.unshift(record);persistPreviewHomecare()}else{const {data,error}=await supabase.rpc('portal_save_wound_assessment',{p_token:state.portalToken,p_findings:findings,p_temperature:temp,p_notes:notes});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Catatan luka gagal disimpan.');await loadPortalHomecare()}toast(record.urgent_flag?'Catatan disimpan. Luka terbuka/perdarahan perlu pertolongan segera.':'Pemeriksaan luka berhasil disimpan.','success');navigate('wounds');if(record.urgent_flag){toast('Luka terbuka atau perdarahan: segera ke IGD atau hubungi 119. Jangan menunggu aplikasi.','error')}else if(findings.some(x=>['Cairan/nanah dari luka','Bau tidak sedap','Kemerahan meluas','Demam atau menggigil'].includes(x))||(temp!==null&&temp>=38)){toast('Hubungi tim bedah/rumah sakit hari ini untuk arahan; jika memburuk, ke IGD.','error')}}catch(err){toast(err.message||'Tidak dapat menyimpan catatan luka.','error')}}
+   
+async function saveWoundAssessment(e) {
+  e.preventDefault();
+
+  const form = e.currentTarget;
+  const findings = [
+    ...form.querySelectorAll('input[name="wound_findings"]:checked')
+  ].map(x => x.value);
+
+  if (!findings.length) {
+    toast('Pilih kondisi luka yang paling sesuai.', 'error');
+    return;
+  }
+
+  if (findings.includes(woundChoices[0]) && findings.length > 1) {
+    toast('Pilihan “tidak ada perubahan” tidak dapat digabung.', 'error');
+    return;
+  }
+
+  const temp = form.elements.temperature.value
+    ? Number(form.elements.temperature.value)
+    : null;
+  const notes = form.elements.notes.value.trim();
+
+  // Foto bersifat opsional. Input akan ditambahkan pada langkah berikutnya.
+  const photoInput = form.querySelector('input[name="wound_photo"]');
+  const photo = photoInput?.files?.[0] || null;
+
+  if (photo) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(photo.type)) {
+      toast('Foto harus berformat JPG, PNG, atau WebP.', 'error');
+      return;
+    }
+
+    if (photo.size <= 0 || photo.size > 5 * 1024 * 1024) {
+      toast('Ukuran foto maksimal 5 MiB.', 'error');
+      return;
+    }
+  }
+
+  const record = {
+    id: 'demo-wound-' + Date.now(),
+    case_id: currentCase()?.id,
+    findings,
+    temperature: temp,
+    notes,
+    urgent_flag: findings.some(x =>
+      ['Luka terbuka', 'Perdarahan'].includes(x)
+    ),
+    created_at: new Date().toISOString()
+  };
+
+  let assessmentSaved = false;
+  let photoSaved = false;
+
+  try {
+    if (IS_PREVIEW) {
+      state.homecare.wounds.unshift(record);
+      persistPreviewHomecare();
+      assessmentSaved = true;
+
+      if (photo) {
+        toast(
+          'Catatan tersimpan di mode pratinjau. Unggah foto belum dijalankan.',
+          'success'
+        );
+      }
+    } else {
+      const { data, error } = await supabase.rpc(
+        'portal_save_wound_assessment',
+        {
+          p_token: state.portalToken,
+          p_findings: findings,
+          p_temperature: temp,
+          p_notes: notes
+        }
+      );
+
+      if (error) throw error;
+
+      if (!data?.ok) {
+        throw new Error(
+          data?.message || 'Catatan luka gagal disimpan.'
+        );
+      }
+
+      assessmentSaved = true;
+
+      // Hanya unggah foto jika dipilih pasien.
+      if (photo) {
+        const assessmentId = data.id;
+        const caseId = state.portalCase?.id || currentCase()?.id;
+
+        if (!assessmentId) {
+          throw new Error(
+            'Catatan tersimpan, tetapi ID asesmen tidak tersedia untuk unggah foto.'
+          );
+        }
+
+        if (!caseId) {
+          throw new Error(
+            'Catatan tersimpan, tetapi ID kasus tidak tersedia untuk unggah foto.'
+          );
+        }
+
+        const uploadForm = new FormData();
+        uploadForm.append('file', photo);
+        uploadForm.append('case_id', caseId);
+        uploadForm.append('wound_assessment_id', assessmentId);
+
+        const response = await fetch(
+          'https://gcwswwbydxqbidunfluj.supabase.co/functions/v1/portal-wound-photo',
+          {
+            method: 'POST',
+            headers: {
+              'x-portal-token': state.portalToken
+            },
+            body: uploadForm
+          }
+        );
+
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error(
+            'Catatan tersimpan, tetapi respons unggah foto tidak dapat dibaca.'
+          );
+        }
+
+        if (!response.ok || !result?.ok) {
+          throw new Error(
+            'Catatan tersimpan, tetapi foto gagal diunggah: ' +
+            (result?.message || `HTTP ${response.status}`)
+          );
+        }
+
+        photoSaved = true;
+      }
+
+      await loadPortalHomecare();
+    }
+
+    if (photo && !photoSaved && !IS_PREVIEW) {
+      toast(
+        'Catatan luka tersimpan, tetapi foto belum berhasil diunggah.',
+        'error'
+      );
+    } else {
+      toast(
+        record.urgent_flag
+          ? 'Catatan disimpan. Luka terbuka/perdarahan perlu pertolongan segera.'
+          : 'Pemeriksaan luka berhasil disimpan.' +
+            (photoSaved ? ' Foto berhasil diunggah.' : ''),
+        'success'
+      );
+    }
+
+    navigate('wounds');
+
+    if (record.urgent_flag) {
+      toast(
+        'Luka terbuka atau perdarahan: segera ke IGD atau hubungi 119. Jangan menunggu aplikasi.',
+        'error'
+      );
+    } else if (
+      findings.some(x =>
+        [
+          'Cairan/nanah dari luka',
+          'Bau tidak sedap',
+          'Kemerahan meluas',
+          'Demam atau menggigil'
+        ].includes(x)
+      ) ||
+      (temp !== null && temp >= 38)
+    ) {
+      toast(
+        'Hubungi tim bedah/rumah sakit hari ini untuk arahan; jika memburuk, ke IGD.',
+        'error'
+      );
+    }
+  } catch (err) {
+    toast(
+      err.message ||
+      (assessmentSaved
+        ? 'Catatan tersimpan, tetapi proses foto perlu diperiksa.'
+        : 'Tidak dapat menyimpan catatan luka.'),
+      'error'
+    );
+  }
+}
+
     
     const activityTasks=[['log_roll','Gunakan cara miring saat bangun (*log roll*) bila telah diajarkan'],['slow_transfer','Berpindah posisi perlahan; minta bantuan bila pusing/lemah'],['short_walk','Berjalan pendek sesuai toleransi dan instruksi pulang'],['breathing','Latihan napas/batuk sesuai arahan petugas'],['splinting','Sangga area perut dengan bantal saat batuk/bergerak bila nyaman'],['avoid_lifting','Menghindari angkat beban sesuai batasan surat pulang']];
     function renderActivity(){const today=careLocalDateInput();const latest=(state.homecare?.activities||[]).find(x=>(x.activity_date||String(x.created_at||'').slice(0,10))===today);const checks=latest?.checks||{};return `<div class="page-title"><div><div class="eyebrow">Panduan gerak aman</div><h1>Aktivitas dan mobilisasi</h1><p>Bergerak bertahap membantu pemulihan. Sesuaikan dengan kemampuan, jenis operasi, dan batasan dari tim bedah.</p></div></div><div class="content-grid"><section class="card"><div class="card-head"><div><h2>Teknik yang perlu diketahui</h2><p>Gunakan hanya bila sesuai instruksi pulang Anda.</p></div></div><div class="content-section"><h3>Bangun dari tempat tidur (*log roll*)</h3><ol class="plain-list"><li>Tekuk lutut bila nyaman, lalu miringkan bahu dan panggul bersama-sama ke satu sisi.</li><li>Geser kaki perlahan ke tepi tempat tidur sambil mendorong tubuh dengan lengan hingga duduk.</li><li>Duduk sejenak sebelum berdiri. Minta pendamping membantu bila lemah atau pusing.</li></ol></div><div class="content-section"><h3>Batuk atau bergerak dengan menyangga luka (*splinting*)</h3><ol class="plain-list"><li>Letakkan bantal kecil atau handuk terlipat secara lembut di atas area perut sesuai kenyamanan.</li><li>Sangga tanpa menekan berlebihan saat batuk, tertawa, atau berpindah posisi.</li><li>Jangan menahan napas atau memaksakan gerak bila nyeri meningkat tajam.</li></ol></div><div class="content-section"><h3>Berjalan dan batasan aktivitas</h3><ul class="plain-list"><li>Mulai dari jarak pendek dan tingkatkan perlahan sesuai toleransi serta petunjuk petugas.</li><li>Hindari angkat beban, mengejan, atau aktivitas yang menarik luka sampai tim bedah menyatakan aman.</li><li>Hentikan aktivitas dan cari bantuan bila muncul sesak, nyeri dada, pusing berat, atau nyeri perut yang memburuk.</li></ul></div><div class="notice notice-warn">${icon('info')}<div>Daftar ini bukan target wajib harian. Jangan lanjutkan gerakan yang dilarang di surat pulang.</div></div></section><section class="card"><div class="card-head"><div><h2>Checklist aktivitas hari ini</h2><p>Tandai aktivitas yang sudah dilakukan dengan aman.</p></div><div class="icon-box">${icon('check')}</div></div><form class="form-grid" onsubmit="saveActivityCheckin(event)">${activityTasks.map(([k,t])=>`<label class="check-row"><input type="checkbox" name="activity_${k}" ${checks[k]?'checked':''} style="margin-top:4px;accent-color:var(--teal)"><span><strong>${t}</strong></span></label>`).join('')}<div class="field"><label>Catatan (opsional)</label><textarea name="activity_notes" maxlength="1200" placeholder="Contoh: perlu bantuan saat bangun"></textarea></div><button class="btn btn-primary" type="submit">Simpan checklist</button></form></section></div>`}
