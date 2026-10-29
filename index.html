@@ -317,56 +317,7 @@ let symptomReportsChannel = null;
 let symptomReportsRefreshTimer = null;
 
 function startSymptomReportsRealtime() {
-  if (IS_PREVIEW || !isStaff() || !state.user) return;
-
-  // Hindari membuat subscription ganda.
-  if (symptomReportsChannel) return;
-
-  symptomReportsChannel = supabase
-    .channel('staff-symptom-reports')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'symptom_reports'
-      },
-      async (payload) => {
-        try {
-          // Muat ulang data melalui RPC yang sudah memeriksa
-          // hak akses nurse/admin.
-          await loadStaffOverview();
-
-          const report = payload.new || {};
-          const isUrgent = report.urgent_flag === true;
-
-          if (payload.eventType === 'INSERT') {
-            toast(
-              isUrgent
-                ? 'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.'
-                : 'Laporan gejala baru masuk. Silakan tinjau dashboard.',
-              isUrgent ? 'error' : 'success'
-            );
-          }
-
-          // Perbarui tampilan bila petugas sedang membuka dashboard.
-          if (state.currentView === 'staff') {
-            renderCurrentView();
-          }
-        } catch (err) {
-          console.error('Gagal memperbarui laporan gejala:', err);
-        }
-      }
-    )
-    .subscribe((status) => {
-      console.log('Status Realtime laporan gejala:', status);
-    });
-}
-
-let symptomReportsChannel = null;
-
-function startSymptomReportsRealtime() {
-  if (IS_PREVIEW || !isStaff() || !state.user) return;
+  if (IS_PREVIEW || !supabase || !isStaff() || !state.user) return;
   if (symptomReportsChannel) return;
 
   symptomReportsChannel = supabase
@@ -382,14 +333,13 @@ function startSymptomReportsRealtime() {
         try {
           const report = payload.new || {};
 
-          // Muat ulang laporan melalui RPC yang memeriksa
-          // hak akses nurse/admin.
+          // Ambil ulang data menggunakan RPC yang memvalidasi hak akses staf.
           await loadStaffOverview();
 
-          // Perbarui tampilan dashboard yang sedang terbuka.
+          // Perbarui tampilan pada menu yang sedang dibuka.
           renderView();
 
-          // Berikan peringatan untuk laporan baru.
+          // Notifikasi hanya untuk laporan baru yang diterima.
           if (report.urgent_flag === true) {
             toast(
               'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.',
@@ -402,31 +352,18 @@ function startSymptomReportsRealtime() {
             );
           }
         } catch (err) {
-          console.error(
-            'Gagal memperbarui laporan gejala:',
-            err
-          );
+          console.error('Gagal memperbarui laporan gejala:', err);
         }
       }
     )
     .subscribe((status) => {
-      console.log(
-        'Status Realtime laporan gejala:',
-        status
-      );
+      console.log('Status Realtime laporan gejala:', status);
     });
 }
 
 function stopSymptomReportsRealtime() {
-  if (!symptomReportsChannel) return;
-
-  supabase.removeChannel(symptomReportsChannel);
-  symptomReportsChannel = null;
-}
-
-function stopSymptomReportsRealtime() {
   if (symptomReportsChannel) {
-    supabase.removeChannel(symptomReportsChannel);
+    void supabase?.removeChannel(symptomReportsChannel);
     symptomReportsChannel = null;
   }
 
@@ -436,7 +373,6 @@ function stopSymptomReportsRealtime() {
   }
 }
 
-    
     function showApp(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');document.getElementById('mini-name').textContent=state.user.full_name;document.getElementById('mini-role').textContent=roleLabel(state.user.role);document.getElementById('mini-avatar').textContent=initials(state.user.full_name);document.getElementById('top-name').textContent=state.user.full_name;document.getElementById('top-role').textContent=roleLabel(state.user.role);document.getElementById('top-avatar').textContent=initials(state.user.full_name);buildNav();}
     function roleLabel(role){return ({patient:'Pasien',family:'Keluarga pasien',nurse:'Perawat',manager:'Pengelola',admin:'Administrator'})[role]||'Pengguna'}
     function friendlySurgeryType(value){const v=String(value||'').trim();if(!v)return 'Operasi perut';return /laparatomi/i.test(v)?'Operasi perut':v;}
