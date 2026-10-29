@@ -278,14 +278,19 @@
     });
 
     function demoLogin(kind){if(!IS_PREVIEW)return;state.portalToken=null;state.session=null;state.isPreview=true;state.modules=demoModules.map(m=>structuredClone(m));state.progress=demoProgress.map(x=>({...x}));state.reports=demoReports.map(x=>({...x}));state.cases=demoCases.map(x=>({...x}));state.staffOverview=null;state.homecare=emptyHomecare();if(kind==='patient'){state.user={id:'demo-patient',username:'sari.demo',full_name:'Sari Wulandari',role:'patient',case_id:demoCase.id,portal:true}}else if(kind==='family'){state.user={id:'demo-family',username:'keluarga.demo',full_name:'Dina Wulandari',role:'family',case_id:demoCase.id,portal:true}}else if(kind==='nurse'){state.user={id:'demo-nurse',email:'perawat@lapacare.demo',full_name:'Ns. Demo Perawat',role:'nurse',portal:false}}else{state.user={id:'demo-admin',email:'pengelola@lapacare.demo',full_name:'Pengelola Aplikasi',role:'manager',portal:false}}hydratePreviewHomecare();if(isStaff())loadStaffHomecare();showApp();navigate('home')}
-    async function enterStaffApp(authUser){
+    
+async function enterStaffApp(authUser) {
   state.session = state.session || null;
 
-  const { data: profile, error } = await supabase.rpc('staff_get_my_profile');
+  const { data: profile, error } =
+    await supabase.rpc('staff_get_my_profile');
+
   if (error) throw error;
 
   if (!profile || !profile.active) {
-    throw new Error('Profil tidak aktif atau belum disiapkan. Hubungi administrator.');
+    throw new Error(
+      'Profil tidak aktif atau belum disiapkan. Hubungi administrator.'
+    );
   }
 
   state.user = {
@@ -294,12 +299,143 @@
     portal: false
   };
 
-  await loadStaffOverview();
-  showApp();
-  navigate('home');
+  try {
+    await loadStaffOverview();
+    showApp();
+    navigate('home');
+    startSymptomReportsRealtime();
+  } catch (err) {
+    stopSymptomReportsRealtime();
+    throw err;
+  }
 }
+
     async function loadPortalData(){if(IS_PREVIEW)return;const {data,error}=await supabase.rpc('portal_get_data',{p_token:state.portalToken});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Sesi tidak valid. Silakan masuk kembali.');state.user={...state.user,...data.user,case_id:data.case?.id};state.portalCase=data.case;state.modules=data.modules||[];state.progress=data.progress||[];state.reports=data.reports||[];await loadPortalHomecare();}
     async function loadStaffOverview(){if(IS_PREVIEW){state.staffOverview={cases:state.cases,reports:state.reports,progress:state.progress,modules:state.modules};return;}const {data,error}=await supabase.rpc('staff_get_overview');if(error)throw error;state.staffOverview=data||{cases:[],reports:[],progress:[],modules:[]};state.cases=state.staffOverview.cases||[];state.reports=state.staffOverview.reports||[];state.progress=state.staffOverview.progress||[];state.modules=state.staffOverview.modules||[];await loadStaffHomecare();}
+    
+let symptomReportsChannel = null;
+let symptomReportsRefreshTimer = null;
+
+function startSymptomReportsRealtime() {
+  if (IS_PREVIEW || !isStaff() || !state.user) return;
+
+  // Hindari membuat subscription ganda.
+  if (symptomReportsChannel) return;
+
+  symptomReportsChannel = supabase
+    .channel('staff-symptom-reports')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'symptom_reports'
+      },
+      async (payload) => {
+        try {
+          // Muat ulang data melalui RPC yang sudah memeriksa
+          // hak akses nurse/admin.
+          await loadStaffOverview();
+
+          const report = payload.new || {};
+          const isUrgent = report.urgent_flag === true;
+
+          if (payload.eventType === 'INSERT') {
+            toast(
+              isUrgent
+                ? 'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.'
+                : 'Laporan gejala baru masuk. Silakan tinjau dashboard.',
+              isUrgent ? 'error' : 'success'
+            );
+          }
+
+          // Perbarui tampilan bila petugas sedang membuka dashboard.
+          if (state.currentView === 'staff') {
+            renderCurrentView();
+          }
+        } catch (err) {
+          console.error('Gagal memperbarui laporan gejala:', err);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log('Status Realtime laporan gejala:', status);
+    });
+}
+
+let symptomReportsChannel = null;
+
+function startSymptomReportsRealtime() {
+  if (IS_PREVIEW || !isStaff() || !state.user) return;
+  if (symptomReportsChannel) return;
+
+  symptomReportsChannel = supabase
+    .channel('staff-symptom-reports')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'symptom_reports'
+      },
+      async (payload) => {
+        try {
+          const report = payload.new || {};
+
+          // Muat ulang laporan melalui RPC yang memeriksa
+          // hak akses nurse/admin.
+          await loadStaffOverview();
+
+          // Perbarui tampilan dashboard yang sedang terbuka.
+          renderView();
+
+          // Berikan peringatan untuk laporan baru.
+          if (report.urgent_flag === true) {
+            toast(
+              'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.',
+              'error'
+            );
+          } else {
+            toast(
+              'Laporan gejala baru masuk. Silakan tinjau dashboard.',
+              'success'
+            );
+          }
+        } catch (err) {
+          console.error(
+            'Gagal memperbarui laporan gejala:',
+            err
+          );
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log(
+        'Status Realtime laporan gejala:',
+        status
+      );
+    });
+}
+
+function stopSymptomReportsRealtime() {
+  if (!symptomReportsChannel) return;
+
+  supabase.removeChannel(symptomReportsChannel);
+  symptomReportsChannel = null;
+}
+
+function stopSymptomReportsRealtime() {
+  if (symptomReportsChannel) {
+    supabase.removeChannel(symptomReportsChannel);
+    symptomReportsChannel = null;
+  }
+
+  if (symptomReportsRefreshTimer) {
+    clearTimeout(symptomReportsRefreshTimer);
+    symptomReportsRefreshTimer = null;
+  }
+}
+
     
     function showApp(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');document.getElementById('mini-name').textContent=state.user.full_name;document.getElementById('mini-role').textContent=roleLabel(state.user.role);document.getElementById('mini-avatar').textContent=initials(state.user.full_name);document.getElementById('top-name').textContent=state.user.full_name;document.getElementById('top-role').textContent=roleLabel(state.user.role);document.getElementById('top-avatar').textContent=initials(state.user.full_name);buildNav();}
     function roleLabel(role){return ({patient:'Pasien',family:'Keluarga pasien',nurse:'Perawat',manager:'Pengelola',admin:'Administrator'})[role]||'Pengguna'}
@@ -606,7 +742,7 @@ async function createCase(e) {
     function reviewReport(id){const r=state.reports.find(x=>x.id===id);if(!r){toast('Laporan tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Tinjauan laporan</div><h2>${esc(r.patient_name||r.case_patient_name||'Laporan pasien')}</h2><p class="muted tiny">${esc(timeFmt(r.created_at))}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><div class="notice ${r.urgent_flag?'notice-danger':'notice-info'}">${icon(r.urgent_flag?'alert':'info')}<div><strong>${r.urgent_flag?'Perlu evaluasi klinis segera':'Ringkasan laporan'}</strong><br>${esc((r.symptoms||[]).join(', '))}<br>Skala nyeri: ${Number(r.severity??0)}/10</div></div>${r.notes?`<p style="margin-top:13px;font-size:13px">${esc(r.notes)}</p>`:''}<form class="form-grid" style="margin-top:16px" onsubmit="saveReportReview(event,'${esc(id)}')"><div class="field"><label>Status tindak lanjut</label><select name="status"><option value="pending" ${r.status==='pending'?'selected':''}>Menunggu tindak lanjut</option><option value="seen" ${r.status==='seen'?'selected':''}>Telah ditinjau</option><option value="closed" ${r.status==='closed'?'selected':''}>Ditutup sesuai prosedur</option></select></div><div class="field"><label>Catatan tindak lanjut (opsional)</label><textarea name="review_note" maxlength="1200" placeholder="Catatan untuk dokumentasi internal, tidak menggantikan komunikasi klinis langsung">${esc(r.review_note||'')}</textarea></div><div class="notice notice-warn">${icon('info')}<div>Jangan memberikan diagnosis otomatis. Gejala dengan tanda bahaya harus ditindaklanjuti sesuai alur triase dan komunikasi klinis fasilitas.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">Simpan tinjauan</button></div></form></section></div>`}
     async function saveReportReview(e,id){e.preventDefault();const fd=new FormData(e.currentTarget);const status=String(fd.get('status'));const review_note=String(fd.get('review_note')||'').trim();try{if(IS_PREVIEW){const r=state.reports.find(x=>x.id===id);r.status=status;r.review_note=review_note;r.reviewed_at=new Date().toISOString();}else{const {data,error}=await supabase.rpc('staff_review_symptom_report',{p_report_id:id,p_status:status,p_note:review_note});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Tinjauan tidak dapat disimpan.');await loadStaffOverview()}closeModal();toast('Tinjauan laporan tersimpan.','success');navigate('staff')}catch(err){toast(err.message||'Tidak dapat menyimpan tinjauan.','error')}}
     function closeModal(){document.getElementById('modal-root').innerHTML=''}
-    async function logout(){try{if(!IS_PREVIEW&&state.portalToken){await supabase.rpc('portal_logout',{p_token:state.portalToken})}else if(!IS_PREVIEW&&state.session){await supabase.auth.signOut()}}catch(e){console.error(e)}state.user=null;state.session=null;state.portalToken=null;state.cases=[];state.reports=[];state.progress=[];state.modules=[];state.staffOverview=null;state.homecare=emptyHomecare();document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');closeModal();document.getElementById('login-password').value='';document.getElementById('login-username').value='';setLoginMode('portal')}
+    async function logout() {stopSymptomReportsRealtime();try{if(!IS_PREVIEW&&state.portalToken){await supabase.rpc('portal_logout',{p_token:state.portalToken})}else if(!IS_PREVIEW&&state.session){await supabase.auth.signOut()}}catch(e){console.error(e)}state.user=null;state.session=null;state.portalToken=null;state.cases=[];state.reports=[];state.progress=[];state.modules=[];state.staffOverview=null;state.homecare=emptyHomecare();document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');closeModal();document.getElementById('login-password').value='';document.getElementById('login-username').value='';setLoginMode('portal')}
     
     function setupPwaBestEffort(){if(!('serviceWorker' in navigator))return;try{const workerCode=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{});`;const blob=new Blob([workerCode],{type:'text/javascript'});const blobUrl=URL.createObjectURL(blob);navigator.serviceWorker.register(blobUrl).catch(err=>console.info('Service worker terbatas; butuh file fisik sw.js.',err));}catch(e){}}
     
