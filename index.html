@@ -184,7 +184,20 @@
     const symptomOptions = ['Demam atau menggigil','Kemerahan / bengkak / nanah pada luka','Luka terbuka atau perdarahan','Nyeri semakin berat','Mual atau muntah berulang','Perut makin membesar','Sulit buang air kecil','Tidak bisa buang angin / BAB','Sesak napas','Nyeri dada','Pusing berat / hampir pingsan','Tidak ada keluhan khusus'];
     const emergencySymptoms = ['Luka terbuka atau perdarahan','Sesak napas','Nyeri dada','Pusing berat / hampir pingsan','Demam atau menggigil','Nyeri semakin berat','Mual atau muntah berulang','Perut makin membesar','Tidak bisa buang angin / BAB'];
 
-    function toast(message,type=''){const wrap=document.getElementById('toast-wrap');const node=document.createElement('div');node.className='toast '+type;node.textContent=message;wrap.appendChild(node);setTimeout(()=>node.remove(),4200)}
+    function toast(message,type=''){
+      const wrap = document.getElementById('toast-wrap');
+      if (!wrap) {
+        console.warn('Elemen #toast-wrap tidak ditemukan.');
+        return;
+      }
+      const node = document.createElement('div');
+      node.className = 'toast ' + (type || '');
+      node.textContent = message;
+      wrap.appendChild(node);
+      window.setTimeout(() => node.remove(), 4200);
+    }
+    // Ekspos fungsi agar dapat diuji dari Console; pemanggilan internal tetap sama.
+    window.toast = toast;
     function setLoginMode(mode){loginMode=mode;document.getElementById('tab-patient').classList.toggle('active',mode==='portal');document.getElementById('tab-staff').classList.toggle('active',mode==='staff');document.getElementById('login-id-label').textContent=mode==='portal'?'Username / ID akses':'Email kantor';document.getElementById('login-username').placeholder=mode==='portal'?'Masukkan username':'nama@rumahsakit.go.id';document.getElementById('login-help').textContent=mode==='portal'?'Gunakan akun yang diberikan oleh petugas kesehatan.':'Gunakan akun tenaga kesehatan yang terdaftar di Supabase Auth.';document.getElementById('demo-area').classList.toggle('hidden',!IS_PREVIEW)}
     
     async function autoSetupDatabase(){
@@ -317,7 +330,9 @@ let symptomReportsChannel = null;
 let symptomReportsRefreshTimer = null;
 
 function startSymptomReportsRealtime() {
-  if (IS_PREVIEW || !supabase || !isStaff() || !state.user) return;
+  if (IS_PREVIEW || !isStaff() || !state.user || !supabase) return;
+
+  // Cegah subscription ganda.
   if (symptomReportsChannel) return;
 
   symptomReportsChannel = supabase
@@ -330,40 +345,43 @@ function startSymptomReportsRealtime() {
         table: 'symptom_reports'
       },
       async (payload) => {
+        const report = payload?.new || {};
+        const isUrgent = report.urgent_flag === true;
+
+        // Tampilkan notifikasi segera; jangan menunggu pemuatan ulang data.
+        toast(
+          isUrgent
+            ? 'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.'
+            : 'Laporan gejala baru masuk. Silakan tinjau dashboard.',
+          isUrgent ? 'error' : 'success'
+        );
+
+        console.info('Realtime laporan gejala baru diterima.', {
+          eventType: payload?.eventType,
+          reportId: report.id,
+          urgent: isUrgent
+        });
+
+        // Perbarui data dashboard setelah notifikasi ditampilkan.
         try {
-          const report = payload.new || {};
-
-          // Ambil ulang data menggunakan RPC yang memvalidasi hak akses staf.
           await loadStaffOverview();
-
-          // Perbarui tampilan pada menu yang sedang dibuka.
-          renderView();
-
-          // Notifikasi hanya untuk laporan baru yang diterima.
-          if (report.urgent_flag === true) {
-            toast(
-              'PERINGATAN: Laporan red flag baru masuk. Segera tinjau laporan pasien.',
-              'error'
-            );
-          } else {
-            toast(
-              'Laporan gejala baru masuk. Silakan tinjau dashboard.',
-              'success'
-            );
+          if (currentView === 'staff') {
+            renderView();
           }
         } catch (err) {
-          console.error('Gagal memperbarui laporan gejala:', err);
+          console.error('Notifikasi tampil, tetapi data dashboard gagal diperbarui:', err);
         }
       }
     )
-    .subscribe((status) => {
+    .subscribe((status, err) => {
       console.log('Status Realtime laporan gejala:', status);
+      if (err) console.error('Detail Realtime laporan gejala:', err);
     });
 }
 
 function stopSymptomReportsRealtime() {
-  if (symptomReportsChannel) {
-    void supabase?.removeChannel(symptomReportsChannel);
+  if (symptomReportsChannel && supabase) {
+    supabase.removeChannel(symptomReportsChannel);
     symptomReportsChannel = null;
   }
 
@@ -373,6 +391,7 @@ function stopSymptomReportsRealtime() {
   }
 }
 
+    
     function showApp(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');document.getElementById('mini-name').textContent=state.user.full_name;document.getElementById('mini-role').textContent=roleLabel(state.user.role);document.getElementById('mini-avatar').textContent=initials(state.user.full_name);document.getElementById('top-name').textContent=state.user.full_name;document.getElementById('top-role').textContent=roleLabel(state.user.role);document.getElementById('top-avatar').textContent=initials(state.user.full_name);buildNav();}
     function roleLabel(role){return ({patient:'Pasien',family:'Keluarga pasien',nurse:'Perawat',manager:'Pengelola',admin:'Administrator'})[role]||'Pengguna'}
     function friendlySurgeryType(value){const v=String(value||'').trim();if(!v)return 'Operasi perut';return /laparatomi/i.test(v)?'Operasi perut':v;}
