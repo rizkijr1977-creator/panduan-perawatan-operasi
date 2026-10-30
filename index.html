@@ -754,52 +754,6 @@ async function createCase(e) {
         if(container) container.innerHTML=renderWounds();
       }
     }
-    // TEMPORARY SECURITY TEST: CROSS-ACCOUNT PHOTO UPLOAD
-    // Hapus fungsi ini setelah pengujian selesai.
-    window.__testCrossAccountPhotoUpload = async function () {
-      const assessmentId = "4fe7fee3-d6b7-481e-b8b3-e113f24e47b4";
-      const caseId = "afc095ee-e5e2-45fa-8530-54f6ee4853b1";
-
-      if (!state.user?.portal || !state.portalToken) {
-        console.error("Sesi portal tidak aktif. Silakan login sebagai Pasien Uji 2.");
-        return;
-      }
-
-      // File dummy minimal. Endpoint seharusnya menolak kepemilikan asesmen
-      // sebelum memproses isi file atau menyimpan objek ke Storage.
-      const dummyBytes = new Uint8Array([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
-      ]);
-      const dummyFile = new File([dummyBytes], "security-test.png", {
-        type: "image/png"
-      });
-      const form = new FormData();
-      form.append("file", dummyFile);
-      form.append("case_id", caseId);
-      form.append("wound_assessment_id", assessmentId);
-
-      try {
-        const response = await fetch(
-          "https://gcwswwbydxqbidunfluj.supabase.co/functions/v1/portal-wound-photo",
-          {
-            method: "POST",
-            headers: { "x-portal-token": state.portalToken },
-            body: form
-          }
-        );
-        const result = await response.json().catch(() => null);
-
-        // Jangan pernah mencetak token, file, atau signed URL ke Console.
-        console.log("HASIL UJI UNGGAH LINTAS AKUN:", {
-          http_status: response.status,
-          ok: result?.ok,
-          message: result?.message
-        });
-      } catch (error) {
-        console.error("Pengujian gagal:", error?.message || "Unknown error");
-      }
-    };
-
     async function loadStaffHomecare(){if(IS_PREVIEW){const result={w:[],d:[],a:[],s:[]};for(const c of (state.cases||demoCases)){try{const data=JSON.parse(localStorage.getItem(`temanPulihHomecare:${c.id}`)||'{}');for(const r of (data.wounds||[]))result.w.push({...r,patient_name:c.patient_name,patient_code:c.patient_code});for(const r of (data.diaries||[]))result.d.push({...r,patient_name:c.patient_name,patient_code:c.patient_code});for(const r of (data.activities||[]))result.a.push({...r,patient_name:c.patient_name,patient_code:c.patient_code});for(const r of (data.schedules||[]))result.s.push({...r,patient_name:c.patient_name,patient_code:c.patient_code});}catch(e){}}state.homecare={...emptyHomecare(),staffWounds:result.w.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),staffDiaries:result.d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),staffActivities:result.a.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),staffSchedules:result.s.sort((a,b)=>new Date(a.scheduled_at)-new Date(b.scheduled_at))};return;}const {data,error}=await supabase.rpc('staff_get_homecare');if(error)throw error;state.homecare={...emptyHomecare(),...(data||{})};}
     
     function careTime(value){try{return new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value))}catch{return '—'}}
