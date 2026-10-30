@@ -55,6 +55,26 @@
     .modal-backdrop{position:fixed;inset:0;background:rgba(18,54,59,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:80;display:grid;place-items:center;padding:20px}.modal{width:min(100%,620px);max-height:min(88vh,850px);overflow:auto;background:rgba(255,255,255,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.6);border-radius:23px;padding:24px;box-shadow:0 30px 100px rgba(6,29,35,0.4)}.modal-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:20px}.close-btn{background:rgba(240,245,245,0.8);color:#546a6e;border:0;border-radius:10px;width:34px;height:34px;font-size:20px}
     
     .toast-wrap{position:fixed;right:20px;top:20px;z-index:120;display:grid;gap:8px;max-width:min(380px,calc(100vw - 32px))}.toast{padding:13px 15px;border-radius:13px;color:#fff;background:rgba(23,63,71,0.95);backdrop-filter:blur(8px);box-shadow:var(--shadow);font-size:12px;animation:fadein .2s}.toast.error{background:rgba(153,45,38,0.95)}.toast.success{background:rgba(23,108,75,0.95)}.empty-state{text-align:center;padding:35px 15px;color:#677d82;background:rgba(255,255,255,0.65);border-radius:16px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.empty-state svg{width:36px;height:36px;color:#85a0a3;margin-bottom:10px}.empty-state h3{color:var(--navy)}.progress-ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--teal) var(--progress,0%),rgba(223,238,237,0.7) 0);position:relative;flex-shrink:0}.progress-ring:before{content:"";position:absolute;inset:7px;background:rgba(255,255,255,0.9);border-radius:50%}.progress-ring strong{position:relative;font-size:19px;color:var(--navy)}.profile-hero{display:flex;gap:15px;align-items:center}.profile-big{width:58px;height:58px;background:rgba(217,239,235,0.8);color:var(--teal-dark);border-radius:19px;display:grid;place-items:center;font-size:21px;font-weight:850}.mobile-nav{display:none}.app-footer{padding:26px 0 0;color:var(--ink);font-weight:600;font-size:11px;text-align:center;text-shadow:0 1px 2px rgba(255,255,255,0.8)}.mobile-menu-button{display:none}.demo-tag{font-size:9px;border-radius:999px;background:rgba(255,242,216,0.9);color:#955909;padding:4px 7px;font-weight:850;letter-spacing:.04em}.role-line{font-size:10px;color:#71868b}.case-chip{background:rgba(241,247,246,0.8);border:1px solid rgba(219,236,234,0.7);color:#386b6c;padding:8px 11px;border-radius:12px;font-size:11px;font-weight:750}
+
+    /* NOTIFIKASI PERSISTEN STAF */
+    .notification-bell{position:relative;width:39px;height:39px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.75);border-radius:13px;background:rgba(255,255,255,.78);color:var(--teal-dark);box-shadow:0 3px 12px rgba(20,59,70,.06)}
+    .notification-bell svg{width:20px;height:20px}
+    .notification-count{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#b42318;color:#fff;border:2px solid #fff;font-size:10px;font-weight:850;display:grid;place-items:center}
+    .notification-count.hidden{display:none!important}
+    .notification-section{margin-bottom:17px}
+    .notification-list{display:grid;gap:9px}
+    .notification-item{width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;padding:13px;border:1px solid rgba(224,235,235,.9);border-radius:13px;background:rgba(255,255,255,.72);color:var(--ink)}
+    .notification-item.unread{border-color:#8bc9c1;background:rgba(239,250,247,.92)}
+    .notification-item.urgent{border-color:#efaaa4;background:rgba(255,242,240,.94)}
+    .notification-item .notification-symbol{width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal-dark)}
+    .notification-item.urgent .notification-symbol{background:#ffe1de;color:#a3231b}
+    .notification-item .notification-copy{min-width:0;flex:1}
+    .notification-item strong{display:block;color:var(--navy);font-size:13px}
+    .notification-item .notification-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+    .notification-item .notification-desc{display:block;color:#536970;font-size:12px;margin-top:5px}
+    .notification-item .notification-state{font-size:10px;font-weight:800;color:var(--teal-dark);white-space:nowrap}
+    .notification-item.urgent .notification-state{color:#a3231b}
+
     @media(max-width:1200px){.main-area{padding:23px 25px}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr)}.welcome-banner{grid-template-columns:minmax(0,1fr) 140px}}
     @media(max-width:900px){.sidebar{display:none}.main-area{margin-left:0;padding:22px 22px 100px}.mobile-nav{position:fixed;z-index:50;display:flex;bottom:max(10px,env(safe-area-inset-bottom));left:12px;right:12px;justify-content:space-around;gap:4px;background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.6);border-radius:19px;padding:8px;box-shadow:0 12px 35px rgba(25,73,80,0.1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}.mobile-nav .nav-item{flex:1;justify-content:center;flex-direction:column;gap:3px;padding:8px 3px;font-size:9px;border-radius:12px}.mobile-nav .nav-item svg{width:19px;height:19px}.mobile-nav .nav-label{display:block}.topbar{margin-bottom:22px}.content-grid{grid-template-columns:1fr}.welcome-banner{grid-template-columns:minmax(0,1fr) 120px}.banner-illustration{max-width:120px}.login-layout{max-width:570px;grid-template-columns:1fr}.login-aside{min-height:auto;padding:25px 28px}.login-hero{margin-top:28px}.login-hero h1{font-size:29px}.login-hero p{margin-bottom:0}.login-foot{margin-top:22px}.login-form{padding:28px}.login-aside:after{width:220px;height:220px;right:-110px;bottom:-120px}}
     @media(max-width:600px){body{font-size:13px}.main-area{padding:16px 14px 96px}.topbar{margin-bottom:20px}.breadcrumbs{font-size:10px}.connection{font-size:10px;padding:6px 8px}.welcome-banner{padding:21px 19px;grid-template-columns:1fr;margin-bottom:14px}.welcome-banner h2{font-size:24px}.welcome-banner p{font-size:12px;margin-bottom:14px}.banner-illustration{display:none}.stat-grid{gap:9px;margin-bottom:14px}.stat-card{padding:13px 12px;gap:9px;border-radius:15px}.icon-box{width:35px;height:35px;border-radius:11px}.icon-box svg{width:18px;height:18px}.stat-value{font-size:21px}.stat-label{font-size:10px}.stat-sub{font-size:9px}.card{padding:16px;border-radius:17px}.module-grid{grid-template-columns:1fr;gap:11px}.module-card{min-height:auto;padding:16px}.module-card .module-icon{margin-bottom:10px}.module-card p{margin-bottom:12px}.page-title{align-items:flex-start;flex-direction:column;margin-bottom:18px}.page-title .btn{width:100%}.field-row{grid-template-columns:1fr}.symptom-choice-grid{grid-template-columns:1fr}.edu-toolbar{align-items:stretch;flex-direction:column}.search-box{max-width:none}.filter-select{max-width:none;width:100%}.module-detail-hero{padding:18px}.module-detail-hero h1{font-size:25px}.top-right .role-line{display:none}.login-aside{padding:22px}.login-form{padding:23px}.login-hero h1{font-size:27px}.stat-grid .stat-card:nth-child(3),.stat-grid .stat-card:nth-child(4){display:flex}.section-heading{margin-top:23px}.modal{padding:18px;border-radius:19px}.welcome-banner .btn{width:100%}.app-footer{padding-bottom:4px}}
@@ -119,7 +139,7 @@
       </div>
     </aside>
     <main class="main-area">
-      <header class="topbar"><div><div class="breadcrumbs">Panduan Perawatan <span style="margin:0 7px;color:#c4d0d2">/</span><span id="breadcrumb-current">Beranda</span></div></div><div class="top-right"><div class="connection"><span class="dot"></span><span id="connection-label">Mode Preview</span></div><div><div class="person" id="top-name" style="font-size:12px;font-weight:800">Pengguna</div><div class="role-line" id="top-role">Pasien</div></div><div class="top-avatar" id="top-avatar">TP</div></div></header>
+      <header class="topbar"><div><div class="breadcrumbs">Panduan Perawatan <span style="margin:0 7px;color:#c4d0d2">/</span><span id="breadcrumb-current">Beranda</span></div></div><div class="top-right"><div class="connection"><span class="dot"></span><span id="connection-label">Mode Preview</span></div><button id="staff-notification-button" class="notification-bell hidden" type="button" onclick="openStaffNotifications()" aria-label="Buka notifikasi laporan pasien" title="Notifikasi laporan pasien"><span class="notification-bell-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><span id="staff-notification-count" class="notification-count hidden">0</span></button><div><div class="person" id="top-name" style="font-size:12px;font-weight:800">Pengguna</div><div class="role-line" id="top-role">Pasien</div></div><div class="top-avatar" id="top-avatar">TP</div></div></header>
       <section id="view-container" class="view"></section>
       <footer class="app-footer">Panduan Perawatan Pasien di Rumah Setelah Operasi · Bukan pengganti penilaian klinis</footer>
     </main>
@@ -139,7 +159,7 @@
     let supabase = null;
     let loginMode = 'portal';
     let currentView = 'home';
-    const state = { user:null, session:null, portalToken:null, modules:[], progress:[], reports:[], cases:[], accounts:[], isPreview:IS_PREVIEW, staffOverview:null, detailModule:null, homecare:{wounds:[],diaries:[],activities:[],schedules:[],staffWounds:[],staffDiaries:[],staffActivities:[],staffSchedules:[]}, woundPhotos:{} };
+    const state = { user:null, session:null, portalToken:null, modules:[], progress:[], reports:[], cases:[], accounts:[], isPreview:IS_PREVIEW, staffOverview:null, staffNotifications:[], detailModule:null, homecare:{wounds:[],diaries:[],activities:[],schedules:[],staffWounds:[],staffDiaries:[],staffActivities:[],staffSchedules:[]}, woundPhotos:{} };
     const icons = {
       logo:'<path d="M12 3v18M3 12h18"/><path d="M7 7c1.5-2 3.1-3 5-3s3.5 1 5 3M7 17c1.5 2 3.1 3 5 3s3.5-1 5-3"/>',
       home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
@@ -174,6 +194,16 @@
     const initials = (name='Pengguna') => name.trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
     const dateFmt = value => value ? new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(value+'T00:00:00')) : 'Belum ditetapkan';
     const timeFmt = value => value ? new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value)) : '';
+    function formatSymptoms(value){
+      if(Array.isArray(value)) return value.map(x=>typeof x==='string'?x:(x?.label||x?.name||x?.value||'')).filter(Boolean).join(', ');
+      if(typeof value==='string') return value;
+      if(value && typeof value==='object'){
+        const entries=Object.entries(value);
+        const selected=entries.filter(([,v])=>v===true || (typeof v==='string' && v.trim())).map(([k,v])=>v===true?k:String(v));
+        return selected.length?selected.join(', '):entries.map(([k,v])=>`${k}: ${typeof v==='string'?v:JSON.stringify(v)}`).join(', ');
+      }
+      return '';
+    }
     const today = () => new Date().toISOString().slice(0,10);
 
     const demoModules = []; 
@@ -314,6 +344,7 @@ async function enterStaffApp(authUser) {
 
   try {
     await loadStaffOverview();
+    await loadStaffNotifications();
     showApp();
     navigate('home');
     startSymptomReportsRealtime();
@@ -326,6 +357,75 @@ async function enterStaffApp(authUser) {
     async function loadPortalData(){if(IS_PREVIEW)return;const {data,error}=await supabase.rpc('portal_get_data',{p_token:state.portalToken});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Sesi tidak valid. Silakan masuk kembali.');state.user={...state.user,...data.user,case_id:data.case?.id};state.portalCase=data.case;state.modules=data.modules||[];state.progress=data.progress||[];state.reports=data.reports||[];await loadPortalHomecare();}
     async function loadStaffOverview(){if(IS_PREVIEW){state.staffOverview={cases:state.cases,reports:state.reports,progress:state.progress,modules:state.modules};return;}const {data,error}=await supabase.rpc('staff_get_overview');if(error)throw error;state.staffOverview=data||{cases:[],reports:[],progress:[],modules:[]};state.cases=state.staffOverview.cases||[];state.reports=state.staffOverview.reports||[];state.progress=state.staffOverview.progress||[];state.modules=state.staffOverview.modules||[];await loadStaffHomecare();}
     
+
+async function loadStaffNotifications(){
+  if(!isStaff() || !state.user || IS_PREVIEW){
+    state.staffNotifications=[];
+    updateStaffNotificationBadge();
+    return [];
+  }
+  const {data,error}=await supabase.rpc('staff_get_symptom_notifications');
+  if(error) throw error;
+  state.staffNotifications=Array.isArray(data)?data:[];
+  updateStaffNotificationBadge();
+  return state.staffNotifications;
+}
+
+function updateStaffNotificationBadge(){
+  const button=document.getElementById('staff-notification-button');
+  const badge=document.getElementById('staff-notification-count');
+  if(!button || !badge) return;
+  button.classList.toggle('hidden',!isStaff());
+  const count=(state.staffNotifications||[]).filter(n=>!n.read_at).length;
+  badge.textContent=count>99?'99+':String(count);
+  badge.classList.toggle('hidden',count===0);
+  button.setAttribute('aria-label',count?`${count} notifikasi belum dibaca`:'Tidak ada notifikasi belum dibaca');
+}
+
+function openStaffNotifications(){
+  if(!isStaff()) return;
+  navigate('staff');
+  document.getElementById('staff-notifications')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderStaffNotifications(){
+  const rows=state.staffNotifications||[];
+  const unread=rows.filter(n=>!n.read_at).length;
+  return `<section id="staff-notifications" class="card notification-section">
+    <div class="card-head">
+      <div><h2>Notifikasi laporan pasien</h2><p>Notifikasi tersimpan sampai laporan dibuka oleh akun Anda.</p></div>
+      <span class="pill ${unread?'pill-orange':'pill-green'}">${unread} belum dibaca</span>
+    </div>
+    ${rows.length?`<div class="notification-list">${rows.slice(0,30).map(n=>{
+      const urgent=n.urgent_flag===true;
+      const read=!!n.read_at;
+      const symptoms=formatSymptoms(n.symptoms);
+      return `<button type="button" class="notification-item ${urgent?'urgent':''} ${read?'':'unread'}" onclick="reviewReport('${esc(n.report_id)}')">
+        <span class="notification-symbol">${icon(urgent?'alert':'bell')}</span>
+        <span class="notification-copy">
+          <strong>${urgent?'LAPORAN PRIORITAS — ':''}${esc(n.patient_name||'Laporan pasien')}</strong>
+          <span class="notification-meta">${esc(n.patient_code||'')} · ${esc(timeFmt(n.report_created_at||n.notification_created_at))}</span>
+          ${symptoms?`<span class="notification-desc">${esc(symptoms)}</span>`:''}
+        </span>
+        <span class="notification-state">${read?'Sudah dibuka':'Belum dibaca'}</span>
+      </button>`;
+    }).join('')}</div>`:`<div class="empty-state">${icon('bell')}<h3>Belum ada notifikasi</h3><p>Laporan gejala baru yang ditujukan kepada akun Anda akan muncul di sini.</p></div>`}
+  </section>`;
+}
+
+async function markNotificationReadForReport(reportId){
+  if(IS_PREVIEW || !reportId) return;
+  const notification=(state.staffNotifications||[]).find(n=>n.report_id===reportId && !n.read_at);
+  if(!notification) return;
+  const {data,error}=await supabase.rpc('staff_mark_symptom_notification_read',{p_notification_id:notification.notification_id});
+  if(error) throw error;
+  if(data?.ok){
+    notification.read_at=new Date().toISOString();
+    updateStaffNotificationBadge();
+    if(currentView==='staff') renderView();
+  }
+}
+
 let symptomReportsChannel = null;
 let symptomReportsRefreshTimer = null;
 
@@ -364,8 +464,8 @@ function startSymptomReportsRealtime() {
 
         // Perbarui data dashboard setelah notifikasi ditampilkan.
         try {
-          await loadStaffOverview();
-          if (currentView === 'staff') {
+          await Promise.all([loadStaffOverview(),loadStaffNotifications()]);
+          if (currentView === 'staff' || currentView === 'home') {
             renderView();
           }
         } catch (err) {
@@ -392,7 +492,7 @@ function stopSymptomReportsRealtime() {
 }
 
     
-    function showApp(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');document.getElementById('mini-name').textContent=state.user.full_name;document.getElementById('mini-role').textContent=roleLabel(state.user.role);document.getElementById('mini-avatar').textContent=initials(state.user.full_name);document.getElementById('top-name').textContent=state.user.full_name;document.getElementById('top-role').textContent=roleLabel(state.user.role);document.getElementById('top-avatar').textContent=initials(state.user.full_name);buildNav();}
+    function showApp(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');document.getElementById('mini-name').textContent=state.user.full_name;document.getElementById('mini-role').textContent=roleLabel(state.user.role);document.getElementById('mini-avatar').textContent=initials(state.user.full_name);document.getElementById('top-name').textContent=state.user.full_name;document.getElementById('top-role').textContent=roleLabel(state.user.role);document.getElementById('top-avatar').textContent=initials(state.user.full_name);buildNav();updateStaffNotificationBadge();}
     function roleLabel(role){return ({patient:'Pasien',family:'Keluarga pasien',nurse:'Perawat',manager:'Pengelola',admin:'Administrator'})[role]||'Pengguna'}
     function friendlySurgeryType(value){const v=String(value||'').trim();if(!v)return 'Operasi perut';return /laparatomi/i.test(v)?'Operasi perut':v;}
     function isStaff(){return ['nurse','manager','admin'].includes(state.user?.role)}
@@ -603,9 +703,10 @@ function renderHistory(){
         <div class="stat-card"><div class="icon-box">${icon('book')}</div><div><div class="stat-label">Materi aktif</div><div class="stat-value">${(ov.modules||[]).length}</div><div class="stat-sub">Konten edukasi tersedia</div></div></div>
       </div>
       
+      ${renderStaffNotifications()}
       <section class="card" style="margin-bottom:17px">
         <div class="card-head"><div><h2>Laporan gejala</h2><p>Formulir digital bukan alat triase dan tidak menggantikan penilaian langsung.</p></div><span class="pill ${pending.length?'pill-orange':'pill-green'}">${pending.length} menunggu</span></div>
-        ${rs.length ? `<div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Pasien</th><th>Gejala</th><th>Nyeri</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${rs.map(r=>`<tr><td>${esc(timeFmt(r.created_at))}</td><td><div class="patient-name">${esc(r.patient_name||r.case_patient_name||'Pasien')}</div><div class="tiny muted">${esc(r.patient_code||'')}</div></td><td>${esc((r.symptoms||[]).join(', '))}${r.urgent_flag?'<div style="margin-top:5px"><span class="pill pill-red">Perlu evaluasi</span></div>':''}${r.notes?`<div class="tiny muted" style="margin-top:5px">${esc(r.notes)}</div>`:''}</td><td>${Number(r.severity??0)}/10</td><td><span class="pill ${r.status==='closed'?'pill-green':r.status==='seen'?'pill-teal':'pill-orange'}">${r.status==='closed'?'Ditutup':r.status==='seen'?'Ditinjau':'Menunggu'}</span></td><td><button class="btn btn-ghost btn-small" onclick="reviewReport('${esc(r.id)}')">Tinjau</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty-state">${icon('activity')}<h3>Belum ada laporan gejala</h3><p>Laporan dari pasien yang dapat Anda akses akan muncul di sini.</p></div>`}
+        ${rs.length ? `<div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Pasien</th><th>Gejala</th><th>Nyeri</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${rs.map(r=>`<tr><td>${esc(timeFmt(r.created_at))}</td><td><div class="patient-name">${esc(r.patient_name||r.case_patient_name||'Pasien')}</div><div class="tiny muted">${esc(r.patient_code||'')}</div></td><td>${esc(formatSymptoms(r.symptoms))}${r.urgent_flag?'<div style="margin-top:5px"><span class="pill pill-red">Perlu evaluasi</span></div>':''}${r.notes?`<div class="tiny muted" style="margin-top:5px">${esc(r.notes)}</div>`:''}</td><td>${Number(r.severity??0)}/10</td><td><span class="pill ${r.status==='closed'?'pill-green':r.status==='seen'?'pill-teal':'pill-orange'}">${r.status==='closed'?'Ditutup':r.status==='seen'?'Ditinjau':'Menunggu'}</span></td><td><button class="btn btn-ghost btn-small" onclick="reviewReport('${esc(r.id)}')">Tinjau</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty-state">${icon('activity')}<h3>Belum ada laporan gejala</h3><p>Laporan dari pasien yang dapat Anda akses akan muncul di sini.</p></div>`}
       </section>
 
       <section class="card" style="margin-bottom:17px">
@@ -694,10 +795,10 @@ async function createCase(e) {
 
     function openAccountModal(caseId){const c=state.cases.find(x=>x.id===caseId);if(!c){toast('Episode tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Akses pasien & keluarga</div><h2>Buat akun portal</h2><p class="muted tiny">${esc(c.patient_code)} · ${esc(c.patient_name)}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><form class="form-grid" onsubmit="createPortalAccount(event,'${esc(caseId)}')"><div class="field"><label>Nama tampilan</label><input name="display_name" required maxlength="120" placeholder="Nama pasien atau anggota keluarga"></div><div class="field-row"><div class="field"><label>Username</label><input name="username" required minlength="4" maxlength="40" pattern="[A-Za-z0-9._-]{4,40}" placeholder="sari.keluarga"></div><div class="field"><label>Jenis akun</label><select name="role"><option value="patient">Pasien</option><option value="family">Keluarga pasien</option></select></div></div><div class="field"><label>Kata sandi sementara</label><input name="password" type="password" minlength="10" autocomplete="new-password" required placeholder="Minimal 10 karakter"></div><div class="notice notice-warn">${icon('shield')}<div>Berikan kredensial awal secara privat, minta pengguna menggantinya melalui prosedur fasilitas, dan jangan mengirimkan kata sandi melalui grup/pesan terbuka.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" type="submit">Buat akses</button></div></form></section></div>`}
     async function createPortalAccount(e,caseId){e.preventDefault();const fd=new FormData(e.currentTarget);const payload={p_case_id:caseId,p_username:String(fd.get('username')).trim(),p_password:String(fd.get('password')),p_display_name:String(fd.get('display_name')).trim(),p_role:String(fd.get('role'))};try{if(IS_PREVIEW){const c=state.cases.find(x=>x.id===caseId);if(state.accounts.some(a=>a.username.toLowerCase()===payload.p_username.toLowerCase()))throw new Error('Username sudah digunakan.');state.accounts.push({id:'demo-account-'+Date.now(),caseId:caseId,username:payload.p_username,display_name:payload.p_display_name,role:payload.p_role});c.portal_accounts=c.portal_accounts||[];c.portal_accounts.push(state.accounts[state.accounts.length-1]);}else{const {data,error}=await supabase.rpc('staff_create_portal_account',payload);if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Akun tidak dapat dibuat.');await loadStaffOverview()}closeModal();toast('Akun portal berhasil dibuat. Berikan username secara privat kepada pengguna.','success');navigate('staff')}catch(err){toast(err.message||'Tidak dapat membuat akun.','error')}}
-    function reviewReport(id){const r=state.reports.find(x=>x.id===id);if(!r){toast('Laporan tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Tinjauan laporan</div><h2>${esc(r.patient_name||r.case_patient_name||'Laporan pasien')}</h2><p class="muted tiny">${esc(timeFmt(r.created_at))}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><div class="notice ${r.urgent_flag?'notice-danger':'notice-info'}">${icon(r.urgent_flag?'alert':'info')}<div><strong>${r.urgent_flag?'Perlu evaluasi klinis segera':'Ringkasan laporan'}</strong><br>${esc((r.symptoms||[]).join(', '))}<br>Skala nyeri: ${Number(r.severity??0)}/10</div></div>${r.notes?`<p style="margin-top:13px;font-size:13px">${esc(r.notes)}</p>`:''}<form class="form-grid" style="margin-top:16px" onsubmit="saveReportReview(event,'${esc(id)}')"><div class="field"><label>Status tindak lanjut</label><select name="status"><option value="pending" ${r.status==='pending'?'selected':''}>Menunggu tindak lanjut</option><option value="seen" ${r.status==='seen'?'selected':''}>Telah ditinjau</option><option value="closed" ${r.status==='closed'?'selected':''}>Ditutup sesuai prosedur</option></select></div><div class="field"><label>Catatan tindak lanjut (opsional)</label><textarea name="review_note" maxlength="1200" placeholder="Catatan untuk dokumentasi internal, tidak menggantikan komunikasi klinis langsung">${esc(r.review_note||'')}</textarea></div><div class="notice notice-warn">${icon('info')}<div>Jangan memberikan diagnosis otomatis. Gejala dengan tanda bahaya harus ditindaklanjuti sesuai alur triase dan komunikasi klinis fasilitas.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">Simpan tinjauan</button></div></form></section></div>`}
+    function reviewReport(id){const r=state.reports.find(x=>x.id===id);if(!r){toast('Laporan tidak ditemukan.','error');return}document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><section class="modal"><div class="modal-head"><div><div class="eyebrow">Tinjauan laporan</div><h2>${esc(r.patient_name||r.case_patient_name||'Laporan pasien')}</h2><p class="muted tiny">${esc(timeFmt(r.created_at))}</p></div><button class="close-btn" onclick="closeModal()" aria-label="Tutup">×</button></div><div class="notice ${r.urgent_flag?'notice-danger':'notice-info'}">${icon(r.urgent_flag?'alert':'info')}<div><strong>${r.urgent_flag?'Perlu evaluasi klinis segera':'Ringkasan laporan'}</strong><br>${esc(formatSymptoms(r.symptoms))}<br>Skala nyeri: ${Number(r.severity??0)}/10</div></div>${r.notes?`<p style="margin-top:13px;font-size:13px">${esc(r.notes)}</p>`:''}<form class="form-grid" style="margin-top:16px" onsubmit="saveReportReview(event,'${esc(id)}')"><div class="field"><label>Status tindak lanjut</label><select name="status"><option value="pending" ${r.status==='pending'?'selected':''}>Menunggu tindak lanjut</option><option value="seen" ${r.status==='seen'?'selected':''}>Telah ditinjau</option><option value="closed" ${r.status==='closed'?'selected':''}>Ditutup sesuai prosedur</option></select></div><div class="field"><label>Catatan tindak lanjut (opsional)</label><textarea name="review_note" maxlength="1200" placeholder="Catatan untuk dokumentasi internal, tidak menggantikan komunikasi klinis langsung">${esc(r.review_note||'')}</textarea></div><div class="notice notice-warn">${icon('info')}<div>Jangan memberikan diagnosis otomatis. Gejala dengan tanda bahaya harus ditindaklanjuti sesuai alur triase dan komunikasi klinis fasilitas.</div></div><div style="display:flex;justify-content:flex-end;gap:9px"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">Simpan tinjauan</button></div></form></section></div>`;void markNotificationReadForReport(id).catch(err=>{console.error('Status notifikasi gagal diperbarui:',err);toast('Laporan terbuka, tetapi status notifikasi belum berhasil diperbarui.','error')})}
     async function saveReportReview(e,id){e.preventDefault();const fd=new FormData(e.currentTarget);const status=String(fd.get('status'));const review_note=String(fd.get('review_note')||'').trim();try{if(IS_PREVIEW){const r=state.reports.find(x=>x.id===id);r.status=status;r.review_note=review_note;r.reviewed_at=new Date().toISOString();}else{const {data,error}=await supabase.rpc('staff_review_symptom_report',{p_report_id:id,p_status:status,p_note:review_note});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Tinjauan tidak dapat disimpan.');await loadStaffOverview()}closeModal();toast('Tinjauan laporan tersimpan.','success');navigate('staff')}catch(err){toast(err.message||'Tidak dapat menyimpan tinjauan.','error')}}
     function closeModal(){document.getElementById('modal-root').innerHTML=''}
-    async function logout() {stopSymptomReportsRealtime();try{if(!IS_PREVIEW&&state.portalToken){await supabase.rpc('portal_logout',{p_token:state.portalToken})}else if(!IS_PREVIEW&&state.session){await supabase.auth.signOut()}}catch(e){console.error(e)}state.user=null;state.session=null;state.portalToken=null;state.cases=[];state.reports=[];state.progress=[];state.modules=[];state.staffOverview=null;state.homecare=emptyHomecare();document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');closeModal();document.getElementById('login-password').value='';document.getElementById('login-username').value='';setLoginMode('portal')}
+    async function logout() {stopSymptomReportsRealtime();try{if(!IS_PREVIEW&&state.portalToken){await supabase.rpc('portal_logout',{p_token:state.portalToken})}else if(!IS_PREVIEW&&state.session){await supabase.auth.signOut()}}catch(e){console.error(e)}state.user=null;state.session=null;state.portalToken=null;state.cases=[];state.reports=[];state.progress=[];state.modules=[];state.staffOverview=null;state.staffNotifications=[];updateStaffNotificationBadge();state.homecare=emptyHomecare();document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');closeModal();document.getElementById('login-password').value='';document.getElementById('login-username').value='';setLoginMode('portal')}
     
     function setupPwaBestEffort(){if(!('serviceWorker' in navigator))return;try{const workerCode=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{});`;const blob=new Blob([workerCode],{type:'text/javascript'});const blobUrl=URL.createObjectURL(blob);navigator.serviceWorker.register(blobUrl).catch(err=>console.info('Service worker terbatas; butuh file fisik sw.js.',err));}catch(e){}}
     
@@ -1121,7 +1222,7 @@ async function saveWoundAssessment(e) {
       }
     };
 
-    Object.assign(window, {setLoginMode,demoLogin,navigate,openModule,markModuleDone,filterModules,submitSymptom,openNewCaseModal,createCase,openAccountModal,createPortalAccount,reviewReport,saveReportReview,closeModal,logout,autoSetupDatabase,saveWoundAssessment,toggleWoundNone,toggleWoundOption,saveActivityCheckin,saveRecoveryDiary,saveSchedule,updateSchedule,enableCareNotifications, openEditCaseModal, updateCase});
+    Object.assign(window, {setLoginMode,demoLogin,navigate,openModule,markModuleDone,filterModules,submitSymptom,openNewCaseModal,createCase,openAccountModal,createPortalAccount,reviewReport,saveReportReview,closeModal,logout,autoSetupDatabase,saveWoundAssessment,toggleWoundNone,toggleWoundOption,saveActivityCheckin,saveRecoveryDiary,saveSchedule,updateSchedule,enableCareNotifications,openStaffNotifications,openEditCaseModal,updateCase});
     
     initialize();
   </script>
